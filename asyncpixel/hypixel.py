@@ -24,6 +24,7 @@ from typing import Union
 import aiohttp
 from pydantic import parse_obj_as
 from pydantic import UUID4
+from pydantic import validate_arguments
 
 from .exceptions import ApiNoSuccess
 from .exceptions import InvalidApiKey
@@ -54,13 +55,14 @@ BASE_URL = "https://api.hypixel.net/"
 class Hypixel:
     """Client class for hypixel wrapper."""
 
+    @validate_arguments
     def __init__(
         self,
-        api_key: Optional[Union[str, UUID4]] = None,
+        api_key: Optional[UUID4] = None,
     ) -> None:
         """Initialise client object.
         Args:
-            api_key (Optional[str], optional): hypixel api key. Defaults to None.
+            api_key (Optional[str], optional): hypixel api key. @validate_argumentsaults to None.
         """
         if isinstance(api_key, str) and api_key is not None:
             api_key = uuid.UUID(api_key)
@@ -72,10 +74,12 @@ class Hypixel:
         self.retry_after: datetime.datetime = datetime.datetime(1998, 1, 1)
         self._calc_player_level = calc_player_level
 
+    @validate_arguments
     async def close(self) -> None:
         """Used for safe client cleanup."""
         await self._session.close()
 
+    @validate_arguments
     async def _get(
         self,
         path: str,
@@ -146,6 +150,7 @@ class Hypixel:
 
         return data
 
+    @validate_arguments
     async def watchdog_stats(self) -> WatchDog:
         """Get current watchdog stats.
         Returns:
@@ -155,10 +160,11 @@ class Hypixel:
 
         return WatchDog.parse_obj(data)
 
+    @validate_arguments
     async def key_data(self, key: Optional[str] = None) -> Key:
         """Get information about an api key.
         Args:
-            key (Union[UUID4, str], optional): api key. Defaults token provided in class.
+            key (UUID4, optional): api key. Defaults token provided in class.
         Raises:
             InvalidApiKey: No api key available.
         Returns:
@@ -176,6 +182,7 @@ class Hypixel:
 
         return Key.parse_obj(data)
 
+    @validate_arguments
     async def boosters(self) -> Boosters:
         """Get the current online boosters.
         Returns:
@@ -185,6 +192,7 @@ class Hypixel:
         data["decrementing"] = data["boosterState"]["decrementing"]
         return Boosters.parse_obj(data)
 
+    @validate_arguments
     async def player_count(self) -> int:
         """Get the current amount of players online.
         Returns:
@@ -194,6 +202,7 @@ class Hypixel:
 
         return int(data["playerCount"])
 
+    @validate_arguments
     async def news(self) -> List[News]:
         """Get current skyblock news.
         Returns:
@@ -203,10 +212,11 @@ class Hypixel:
 
         return parse_obj_as(List[News], data["items"])
 
-    async def player_status(self, uuid: Union[UUID4, str]) -> Optional[Status]:
+    @validate_arguments
+    async def player_status(self, uuid: UUID4) -> Optional[Status]:
         """Get current online status about a player.
         Args:
-            uuid (Union[UUID4, str]): uuid of player.
+            uuid (UUID4): uuid of player.
         Returns:
             Status: Status object of player.
         """
@@ -215,10 +225,11 @@ class Hypixel:
             return None
         return Status.parse_obj(data["session"])
 
-    async def player_friends(self, uuid: Union[UUID4, str]) -> Optional[List[Friend]]:
+    @validate_arguments
+    async def player_friends(self, uuid: UUID4) -> Optional[List[Friend]]:
         """Get a list of a players friends.
         Args:
-            uuid (Union[UUID4, str]): the uuid of the player you wish to get friends from.
+            uuid (UUID4): the uuid of the player you wish to get friends from.
         Returns:
             List[Friend]: returns a list of friend elements.
         """
@@ -229,6 +240,7 @@ class Hypixel:
 
         return parse_obj_as(List[Friend], data["records"])
 
+    @validate_arguments
     async def bazaar(self) -> Bazaar:
         """Get info of the items in the bazaar.
         Returns:
@@ -248,6 +260,7 @@ class Hypixel:
             bazaar_items=bazaar_items,
         )
 
+    @validate_arguments
     async def auctions(self, page: Optional[int] = 0, retry: int = 3) -> Auction:
         """Get the auctions available.
         Args:
@@ -265,10 +278,11 @@ class Hypixel:
                 pass
         return Auction.parse_obj(data)
 
-    async def recent_games(self, uuid: Union[UUID4, str]) -> Optional[List[Game]]:
+    @validate_arguments
+    async def recent_games(self, uuid: UUID4) -> Optional[List[Game]]:
         """Get recent games of a player.
         Args:
-            uuid (Union[UUID4, str]): uuid of player.
+            uuid (UUID4): uuid of player.
         Returns:
             List[Game]: list of recent games.
         """
@@ -279,101 +293,111 @@ class Hypixel:
 
         return parse_obj_as(List[Game], data["games"])
 
-    async def player(self, uuid: Union[UUID4, str]) -> Optional[Player]:
+    @validate_arguments
+    async def player(self, uuid: UUID4) -> Optional[Player]:
         """Get information about a player from their uuid.
         Args:
-            uuid (Union[UUID4, str]): uuid of player.
+            uuid (UUID4): uuid of player.
         Returns:
             Player: player object.
         """
-        params = {"uuid": str(uuid.UUID(uuid))}
+        params = {"uuid": str(uuid)}
         data = await self._get("player", params=params)
         if data["player"] is None:
             return None
         return Player.parse_obj(data["player"])
 
+    @validate_arguments
     async def guild_by_name(self, guild_name: str) -> Optional[Guild]:
         """Get guild by name.
         Args:
-            guild_name (Union[UUID4, str]): name of guild.
+            guild_name (str): name of guild.
         Returns:
             Guild: guild object.
         """
-        params = {"name": str(uuid.UUID(guild_name))}
+        params = {"name": guild_name}
         data = await self._get("guild", params=params)
         if data["guild"] is None:
             return None
         return Guild.parse_obj(data["guild"])
 
-    async def guild_by_id(self, guild_id: str) -> Optional[Guild]:
+    @validate_arguments
+    async def guild_by_id(self, guild_id: UUID4) -> Optional[Guild]:
         """Get guild by id.
         Args:
-            guild_id (Union[UUID4, str]): id of guild.
+            guild_id (UUID4): id of guild.
         Returns:
             Guild: guild object.
         """
-        params = {"id": str(uuid.UUID(guild_id))}
+        params = {"id": str(guild_id)}
         data = await self._get("guild", params=params)
         if data["guild"] is None:
             return None
         return Guild.parse_obj(data["guild"])
 
-    async def guild_by_player(self, player_uuid: Union[UUID4, str]) -> Optional[Guild]:
+    @validate_arguments
+    async def guild_by_player(self, player_uuid: UUID4) -> Optional[Guild]:
         """Get guild by player.
         Args:
             player_uuid (str): uuid of a player in the guild.
         Returns:
             Guild: guild object.
         """
-        params = {"player": str(uuid.UUID(player_uuid))}
+        params = {"player": str(player_uuid)}
         data = await self._get("guild", params=params)
         if data["guild"] is None:
             return None
         return Guild.parse_obj(data["guild"])
 
+    @validate_arguments
     async def auction_from_uuid(
-        self, uuid: Union[UUID4, str]
+        self, uuid: UUID4
     ) -> Optional[List[AuctionItem]]:
         """Get auction from uuid.
         Args:
-            uuid (str): minecraft uuid.
+            uuid (UUID4): minecraft uuid.
         Returns:
             List[AuctionItem]: list of auctions.
         """
-        params = {"uuid": str(uuid.UUID(uuid))}
+        params = {"uuid": str(uuid)}
         data = await self._get("skyblock/auction", params=params)
         if data["auctions"] is None:
             return None
         return parse_obj_as(List[AuctionItem], data["auctions"])
 
-    async def auction_from_player(self, player: Union[UUID4, str]) -> Optional[List[AuctionItem]]:
+    @validate_arguments
+    async def auction_from_player(
+        self, player: UUID4
+    ) -> Optional[List[AuctionItem]]:
         """Get auction data from player.
         Args:
-            player (Union[UUID4, str]): player.
+            player (UUID4): player.
         Returns:
             List[AuctionItem]: list of auction items.
         """
-        params = {"player": str(uuid.UUID(player))}
+        params = {"player": str(player)}
         data = await self._get("skyblock/auction", params=params)
         if data["auctions"] is None:
             return None
         return parse_obj_as(List[AuctionItem], data["auctions"])
 
+    @validate_arguments
     async def auction_from_profile(
-        self, profile_id: Union[UUID4, str]
+        self, profile_id: UUID4
     ) -> Optional[List[AuctionItem]]:
         """Get auction data from profile.
         Args:
-            profile_id (Union[UUID4, str]): profile id.
+            profile_id (UUID4): profile id.
         Returns:
             List[AuctionItem]: list of auction items.
         """
-        params = {"profile": str(uuid.UUID(profile_id))}
+        params = {"profile": str(profile_id)}
         data = await self._get("skyblock/auction", params=params)
         if data["auctions"] is None:
             return None
         return parse_obj_as(List[AuctionItem], data["auctions"])
 
+    @validate_arguments
     async def game_count(self) -> GameCounts:
         """Gets number of players per game.
         Returns:
@@ -382,6 +406,7 @@ class Hypixel:
         data = await self._get("gameCounts")
         return GameCounts.parse_obj(data)
 
+    @validate_arguments
     async def leaderboards(self) -> Dict[str, List[Leaderboards]]:
         """Get the current leaderboards.
         Returns:
@@ -412,6 +437,7 @@ class Hypixel:
 
         return leaderboard
 
+    @validate_arguments
     async def resources_achievements(self) -> Dict[str, Any]:
         """Get the current resources. Does not require api key.
         Returns:
@@ -420,6 +446,7 @@ class Hypixel:
         data = await self._get("resources/achievements", key_required=False)
         return data
 
+    @validate_arguments
     async def resources_challenges(self) -> Dict[str, Any]:
         """Get the current resources. Does not require api key.
         Returns:
@@ -428,6 +455,7 @@ class Hypixel:
         data = await self._get("resources/challenges", key_required=False)
         return data
 
+    @validate_arguments
     async def resources_quests(self) -> Dict[str, Any]:
         """Get the current resources. Does not require api key.
         Returns:
@@ -436,6 +464,7 @@ class Hypixel:
         data = await self._get("resources/quests", key_required=False)
         return data
 
+    @validate_arguments
     async def resources_guilds_achievements(self) -> Dict[str, Any]:
         """Get the current resources. Does not require api key.
         Returns:
@@ -444,6 +473,7 @@ class Hypixel:
         data = await self._get("resources/guilds/achievements", key_required=False)
         return data
 
+    @validate_arguments
     async def resources_guilds_permissions(self) -> Dict[str, Any]:
         """Get the current resources. Does not require api key.
         Returns:
@@ -452,6 +482,7 @@ class Hypixel:
         data = await self._get("resources/guilds/permissions", key_required=False)
         return data
 
+    @validate_arguments
     async def resources_skyblock_collections(self) -> Dict[str, Any]:
         """Get the current resources. Does not require api key.
         Returns:
@@ -460,6 +491,7 @@ class Hypixel:
         data = await self._get("resources/skyblock/collections", key_required=False)
         return data
 
+    @validate_arguments
     async def resources_skyblock_skills(self) -> Dict[str, Any]:
         """Get the current resources. Does not require api key.
         Returns:
@@ -468,28 +500,30 @@ class Hypixel:
         data = await self._get("resources/skyblock/skills", key_required=False)
         return data
 
-    async def profile(self, profile: Union[UUID4, str]) -> Optional[Profile]:
+    @validate_arguments
+    async def profile(self, profile: UUID4) -> Optional[Profile]:
         """Get profile info of a skyblock player.
         Args:
-            profile (Union[UUID4, str]): profile id of player can be gotten from
+            profile (UUID4): profile id of player can be gotten from
                             running profiles.
         Returns:
             Union[Profile, None]: Profile if it exists
         """
-        params = {"profile": str(uuid.UUID(profile))}
+        params = {"profile": str(profile)}
         data = await self._get("skyblock/profile", params=params)
         if data["profile"] is None:
             return None
         return Profile.parse_obj(data["profile"])
 
-    async def profiles(self, uuid: Union[UUID4, str]) -> Optional[Dict[str, Profile]]:
+    @validate_arguments
+    async def profiles(self, uuid: UUID4) -> Optional[Dict[str, Profile]]:
         """Get info on a profile.
         Args:
-            uuid (str): uuid of player.
+            uuid (UUID4): uuid of player.
         Returns:
             Dict[str, Profile]: json response.
         """
-        params = {"uuid": str(uuid.UUID(uuid))}
+        params = {"uuid": str(uuid)}
         data = await self._get("skyblock/profiles", params=params)
         if data["profiles"] is None:
             return None
@@ -500,6 +534,7 @@ class Hypixel:
             profile_dict[_id] = Profile.parse_obj(profile)
         return profile_dict
 
+    @validate_arguments
     async def uuid_from_name(self, username: str) -> Optional[UUID4]:
         """Helper method to get uuid from username.
         Args:
