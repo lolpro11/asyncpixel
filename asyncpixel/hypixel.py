@@ -176,7 +176,7 @@ class Hypixel:
         if key == "None":
             raise InvalidApiKey()
 
-        params = {"key": str(uuid.UUID(uuid))}
+        params = {"key": str(uuid)}
 
         data = (await self._get("key", params=params, key_required=False))["record"]
 
@@ -220,7 +220,7 @@ class Hypixel:
         Returns:
             Status: Status object of player.
         """
-        data = await self._get("status", params={"uuid": str(uuid.UUID(uuid))})
+        data = await self._get("status", params={"uuid": str(uuid)})
         if data["session"] is None:
             return None
         return Status.parse_obj(data["session"])
@@ -233,7 +233,7 @@ class Hypixel:
         Returns:
             List[Friend]: returns a list of friend elements.
         """
-        params = {"uuid": str(uuid.UUID(uuid))}
+        params = {"uuid": str(uuid)}
         data = await self._get("friends", params=params)
         if data["records"] is None:
             return None
@@ -286,7 +286,7 @@ class Hypixel:
         Returns:
             List[Game]: list of recent games.
         """
-        params = {"uuid": str(uuid.UUID(uuid))}
+        params = {"uuid": str(uuid)}
         data = await self._get("recentGames", params=params)
         if data["games"] is None:
             return None
@@ -322,14 +322,14 @@ class Hypixel:
         return Guild.parse_obj(data["guild"])
 
     @validate_arguments
-    async def guild_by_id(self, guild_id: UUID4) -> Optional[Guild]:
+    async def guild_by_id(self, guild_id: str) -> Optional[Guild]:
         """Get guild by id.
         Args:
-            guild_id (UUID4): id of guild.
+            guild_id (str): id of guild.
         Returns:
             Guild: guild object.
         """
-        params = {"id": str(guild_id)}
+        params = {"id": guild_id}
         data = await self._get("guild", params=params)
         if data["guild"] is None:
             return None
@@ -350,9 +350,7 @@ class Hypixel:
         return Guild.parse_obj(data["guild"])
 
     @validate_arguments
-    async def auction_from_uuid(
-        self, uuid: UUID4
-    ) -> Optional[List[AuctionItem]]:
+    async def auction_from_uuid(self, uuid: UUID4) -> Optional[List[AuctionItem]]:
         """Get auction from uuid.
         Args:
             uuid (UUID4): minecraft uuid.
@@ -366,9 +364,7 @@ class Hypixel:
         return parse_obj_as(List[AuctionItem], data["auctions"])
 
     @validate_arguments
-    async def auction_from_player(
-        self, player: UUID4
-    ) -> Optional[List[AuctionItem]]:
+    async def auction_from_player(self, player: UUID4) -> Optional[List[AuctionItem]]:
         """Get auction data from player.
         Args:
             player (UUID4): player.
