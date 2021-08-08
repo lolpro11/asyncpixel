@@ -112,7 +112,7 @@ class Social(BaseModel):
     discord: Optional[str]
     hypixel_forums: Optional[str]
 
-    @root_validator(pre=True)
+    @root_validator(pre=True)  # pragma: no cover
     def get_social_media(  # noqa: D102
         cls, values: Dict[str, Any]  # noqa: B902, N805, D102
     ) -> Dict[str, Any]:
@@ -208,7 +208,7 @@ class Player(BaseModel):
     channel: Optional[str]
     most_recent_game_type: Optional[GameType]
 
-    @validator("most_recent_game_type", pre=True)
+    @validator("most_recent_game_type", pre=True)  # pragma: no cover
     def validate_game_type(  # noqa: D102
         cls, v: Union[str, int]  # noqa: B902, N805
     ) -> GameType:

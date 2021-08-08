@@ -1613,6 +1613,9 @@ async def test_player(hypixel_client: Hypixel, key: uuid.UUID) -> None:
         #     "BEDWARS", "Bedwars", "Bed Wars", 58
         # )
         assert data.level == 18.090376392868585
+        assert data.stats.skywars.kills_per_death == 0.0
+        assert data.stats.skywars.wins_per_lose == 0.0
+        assert data.stats.bedwars.singles.win_per_lose == 0.0
 
 
 @pytest.mark.asyncio

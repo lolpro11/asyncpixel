@@ -23,7 +23,7 @@ class Status(BaseModel):
     game_type: Optional[GameType] = None
     mode: Optional[str] = None
 
-    @validator("game_type", pre=True)
+    @validator("game_type", pre=True)  # pragma: no cover
     def validate_game_type(cls, v: str) -> GameType:  # noqa: B902, N805, D102
         game_type = [game for game in get_game_types() if game.type_name == v][0]
         return game_type
